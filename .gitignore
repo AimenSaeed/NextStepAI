@@ -216,3 +216,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node
+node_modules/
+
+# Environment & secrets
+.env
+
+# Databases
+*.sqlite3
+*.db
+
+# OS files
+.DS_Store
