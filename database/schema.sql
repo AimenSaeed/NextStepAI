@@ -26,14 +26,3 @@ CREATE TABLE opportunities (
     source_url TEXT,
     last_verified_date TEXT
 );
-
-CREATE TABLE matches (
-    match_id INTEGER PRIMARY KEY,
-    student_id INTEGER NOT NULL,
-    opportunity_id INTEGER NOT NULL,
-    eligibility_status TEXT,
-    total_score REAL,
-
-    FOREIGN KEY (student_id) REFERENCES students(student_id),
-    FOREIGN KEY (opportunity_id) REFERENCES opportunities(opportunity_id)
-);
