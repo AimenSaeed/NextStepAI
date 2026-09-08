@@ -20,6 +20,7 @@ just because new scholarships were added to the spreadsheet.
 """
 
 import re
+import sqlite3
 from pathlib import Path
 from typing import List, Optional
 
@@ -144,62 +145,132 @@ def _extract_field_requirement(text: str) -> Optional[str]:
     return text.strip()
 
 
-def load_opportunities(excel_path: str) -> List[Opportunity]:
+def _normalize_row(opportunity_id: int, name: str, provider: str,
+                    eligibility_text: str, amount_text: str, province_text: str,
+                    level_text: str, field_text: str, deadline_text: str,
+                    url: str, notes: str) -> Opportunity:
     """
-    Reads the raw scholarship Excel sheet and returns a list of
-    normalized Opportunity objects. This is the ONLY function the
-    rest of the app should call to get opportunity data.
+    Turns one raw row (however it was sourced -- Excel or SQLite) into
+    a clean Opportunity object. All parsing logic lives here, in one
+    place, regardless of where the raw data came from.
     """
+    def clean(text):
+        return None if text is None or str(text).strip().lower() in ("", "nan", "none") else str(text)
+
+    return Opportunity(
+        opportunity_id=opportunity_id,
+        name=name.strip(),
+        provider=clean(provider),
+        country=_extract_country(name, provider or ""),
+        min_cgpa=_extract_cgpa(eligibility_text or ""),
+        is_need_based=_extract_is_need_based(eligibility_text or ""),
+        domicile_requirement=_extract_domicile(province_text or ""),
+        degree_levels=_extract_degree_levels(level_text or ""),
+        field_requirement=_extract_field_requirement(field_text or ""),
+        funding_type=_extract_funding_type(amount_text or ""),
+        deadline_raw=clean(deadline_text),
+        source_url=clean(url),
+        notes=clean(notes),
+    )
+
+
+def load_opportunities_from_excel(excel_path: str) -> List[Opportunity]:
+    """Reads the raw scholarship Excel sheet (used before the database was ready)."""
     df = pd.read_excel(excel_path, sheet_name="Scholarships")
     opportunities = []
-
     for idx, row in df.iterrows():
-        name = str(row.get("Scholarship Name", "")).strip()
-        provider = str(row.get("Provider/Category", "")).strip()
-        eligibility_text = str(row.get("Min CGPA / Eligibility", "") or "")
-        amount_text = str(row.get("Amount / Coverage", "") or "")
-        province_text = str(row.get("Province/Domicile", "") or "")
-        level_text = str(row.get("Level", "") or "")
-        field_text = str(row.get("Field of Study", "") or "")
-        deadline_text = str(row.get("Deadline (typical)", "") or "")
-        url = str(row.get("Official Apply Link", "") or "")
-        notes = str(row.get("Notes", "") or "")
-
-        opportunities.append(Opportunity(
+        opportunities.append(_normalize_row(
             opportunity_id=idx + 1,
-            name=name,
-            provider=provider,
-            country=_extract_country(name, provider),
-            min_cgpa=_extract_cgpa(eligibility_text),
-            is_need_based=_extract_is_need_based(eligibility_text),
-            domicile_requirement=_extract_domicile(province_text),
-            degree_levels=_extract_degree_levels(level_text),
-            field_requirement=_extract_field_requirement(field_text),
-            funding_type=_extract_funding_type(amount_text),
-            deadline_raw=deadline_text if deadline_text.lower() != "nan" else None,
-            source_url=url if url.lower() != "nan" else None,
-            notes=notes if notes.lower() != "nan" else None,
+            name=str(row.get("Scholarship Name", "")),
+            provider=str(row.get("Provider/Category", "")),
+            eligibility_text=str(row.get("Min CGPA / Eligibility", "")),
+            amount_text=str(row.get("Amount / Coverage", "")),
+            province_text=str(row.get("Province/Domicile", "")),
+            level_text=str(row.get("Level", "")),
+            field_text=str(row.get("Field of Study", "")),
+            deadline_text=str(row.get("Deadline (typical)", "")),
+            url=str(row.get("Official Apply Link", "")),
+            notes=str(row.get("Notes", "")),
         ))
-
     return opportunities
 
 
-# Simple in-memory cache so we don't re-read/re-parse the Excel file
+def load_opportunities_from_db(db_path: str) -> List[Opportunity]:
+    """
+    Reads the opportunities table from the shared SQLite database and
+    normalizes each row. Column names here match the teammate's actual
+    schema (min_cgpa, income_ceiling_pkr, etc. are TEXT columns holding
+    the full raw eligibility sentence, not pre-cleaned numbers).
+    """
+    connection = sqlite3.connect(db_path)
+    connection.row_factory = sqlite3.Row
+    cursor = connection.cursor()
+    cursor.execute("""
+        SELECT opportunity_id, name, type, country, min_cgpa,
+               domicile_requirement, income_ceiling_pkr, funding_type,
+               deadline, degree_level, field_requirement, source_url,
+               last_verified_date
+        FROM opportunities
+    """)
+    rows = cursor.fetchall()
+    connection.close()
+
+    opportunities = []
+    for row in rows:
+        # min_cgpa and income_ceiling_pkr are raw sentences here (e.g.
+        # "3.7+ GPA equivalent", "household income <= Rs.60,000/month"),
+        # so we combine them into one eligibility_text blob for parsing --
+        # same as the raw-text schema, just split across two DB columns.
+        eligibility_text = " ".join(filter(None, [row["min_cgpa"], row["income_ceiling_pkr"]]))
+
+        opportunities.append(_normalize_row(
+            opportunity_id=row["opportunity_id"],
+            name=row["name"] or "",
+            provider=row["type"],
+            eligibility_text=eligibility_text,
+            amount_text=row["funding_type"],
+            province_text=row["domicile_requirement"],
+            level_text=row["degree_level"],
+            field_text=row["field_requirement"],
+            deadline_text=row["deadline"],
+            url=row["source_url"],
+            notes=row["last_verified_date"],
+        ))
+        # country comes straight from the DB now instead of being guessed
+        # from name/provider text, since her table has a real column for it.
+        if row["country"]:
+            opportunities[-1].country = row["country"]
+    return opportunities
+
+
+# Simple in-memory cache so we don't re-read/re-parse the source data
 # on every single API request.
 _CACHE: Optional[List[Opportunity]] = None
 
+_DATA_DIR = Path(__file__).parent.parent / "data"
+_DB_PATH = _DATA_DIR / "nextstepai.db"
+_EXCEL_PATH = _DATA_DIR / "Pakistan_Scholarships_Research.xlsx"
 
-def get_opportunities(excel_path: Optional[str] = None) -> List[Opportunity]:
+
+def get_opportunities() -> List[Opportunity]:
+    """
+    Loads from the shared SQLite database if it exists (the real,
+    up-to-date source once your teammate delivers it). Falls back to
+    the Excel file if the database isn't there yet -- so the app keeps
+    working today and switches over automatically with no code change
+    once the database file shows up in data/.
+    """
     global _CACHE
     if _CACHE is None:
-        if excel_path is None:
-            excel_path = str(Path(__file__).parent.parent / "data" / "Pakistan_Scholarships_Research.xlsx")
-        _CACHE = load_opportunities(excel_path)
+        if _DB_PATH.exists():
+            _CACHE = load_opportunities_from_db(str(_DB_PATH))
+        else:
+            _CACHE = load_opportunities_from_excel(str(_EXCEL_PATH))
     return _CACHE
 
 
-def refresh_cache(excel_path: Optional[str] = None) -> List[Opportunity]:
-    """Call this after the spreadsheet is updated with new scholarships."""
+def refresh_cache() -> List[Opportunity]:
+    """Call this after the spreadsheet/database is updated with new scholarships."""
     global _CACHE
     _CACHE = None
-    return get_opportunities(excel_path)
+    return get_opportunities()
