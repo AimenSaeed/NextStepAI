@@ -247,9 +247,10 @@ def load_opportunities_from_db(db_path: str) -> List[Opportunity]:
 # on every single API request.
 _CACHE: Optional[List[Opportunity]] = None
 
-_DATA_DIR = Path(__file__).parent.parent / "data"
-_DB_PATH = _DATA_DIR / "nextstepai.db"
-_EXCEL_PATH = _DATA_DIR / "Pakistan_Scholarships_Research.xlsx"
+# Resolve to project root (2 levels up from backend/app/)
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+_DB_PATH = _REPO_ROOT / "database" / "nextstepai.db"
+_EXCEL_PATH = Path(__file__).resolve().parent.parent / "data" / "Pakistan_Scholarships_Research.xlsx"
 
 
 def get_opportunities() -> List[Opportunity]:

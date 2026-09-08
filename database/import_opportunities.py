@@ -1,12 +1,22 @@
 import sqlite3
 import csv
+from pathlib import Path
 
-# Connect to the existing database
-connection = sqlite3.connect("nextstepai.db")
+# Use paths relative to this script so it works from any directory
+DB_DIR = Path(__file__).resolve().parent
+DB_PATH = DB_DIR / "nextstepai.db"
+SCHEMA_PATH = DB_DIR / "schema.sql"
+CSV_PATH = DB_DIR / "opportunities.csv"
+
+# 1. Connect and create tables from schema.sql
+connection = sqlite3.connect(DB_PATH)
 cursor = connection.cursor()
 
-# Open the CSV file
-with open("opportunities.csv", "r", encoding="utf-8") as file:
+with open(SCHEMA_PATH, "r", encoding="utf-8") as schema_file:
+    cursor.executescript(schema_file.read())
+
+# 2. Insert records from opportunities.csv
+with open(CSV_PATH, "r", encoding="utf-8") as file:
     csv_reader = csv.DictReader(file)
 
     for row in csv_reader:
@@ -46,4 +56,4 @@ with open("opportunities.csv", "r", encoding="utf-8") as file:
 connection.commit()
 connection.close()
 
-print("Opportunities imported successfully!")
+print(f"Database created and opportunities imported successfully at: {DB_PATH}")
