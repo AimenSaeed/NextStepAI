@@ -30,6 +30,10 @@ def get_matches(student: StudentProfile) -> List[MatchResult]:
             results.append(MatchResult(
                 opportunity_id=opp.opportunity_id,
                 name=opp.name,
+                source_url=opp.source_url,
+                deadline_raw=opp.deadline_raw,
+                country=opp.country,
+                provider=opp.provider,
                 eligibility_status=status,
                 reasons_failed=reasons,
                 score_breakdown={},
@@ -41,6 +45,10 @@ def get_matches(student: StudentProfile) -> List[MatchResult]:
         results.append(MatchResult(
             opportunity_id=opp.opportunity_id,
             name=opp.name,
+            source_url=opp.source_url,
+            deadline_raw=opp.deadline_raw,
+            country=opp.country,
+            provider=opp.provider,
             eligibility_status=status,
             reasons_failed=reasons,
             score_breakdown=breakdown,
