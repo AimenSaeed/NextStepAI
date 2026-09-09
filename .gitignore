@@ -227,6 +227,9 @@ node_modules/
 *.sqlite3
 *.db
 
+# Local vector-store/runtime state
+**/.chroma/
+
 # OS files
 .DS_Store
 
