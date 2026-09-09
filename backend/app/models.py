@@ -49,6 +49,10 @@ class Opportunity(BaseModel):
 class MatchResult(BaseModel):
     opportunity_id: int
     name: str
+    source_url: Optional[str] = None
+    deadline_raw: Optional[str] = None
+    country: Optional[str] = None
+    provider: Optional[str] = None
     eligibility_status: str            # "Eligible" | "Partial Match" | "Not Eligible"
     reasons_failed: List[str] = Field(default_factory=list)
     score_breakdown: dict = Field(default_factory=dict)
