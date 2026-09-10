@@ -5,6 +5,7 @@ from time import perf_counter
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from .embeddings import HashEmbeddingService
 from .llm_client import GeminiClient
 from .member_a_client import MemberAClient, MemberAError
@@ -17,6 +18,12 @@ from .vector_store import ChromaVectorStore
 # Resolve relative to this package, not the process working directory.
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / '.env')
 app=FastAPI(title='NextStep AI - Evidence Layer')
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.INFO)
 @lru_cache(maxsize=1)
