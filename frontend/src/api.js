@@ -9,8 +9,8 @@ import { STATUS_MAP } from "./constants";
 import { explainMatch } from "./explain";
 import fallbackOpportunities from "./data/scholarships.json";
 
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
-export const AI_RAG_BASE = import.meta.env.VITE_AI_RAG_BASE || "http://127.0.0.1:8001";
+export const API_BASE = import.meta.env.VITE_API_BASE || "/api/backend";
+export const AI_RAG_BASE = import.meta.env.VITE_AI_RAG_BASE || "/api/rag";
 
 /**
  * Calls AI RAG evidence layer (:8001/analyze)
