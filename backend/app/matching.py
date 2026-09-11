@@ -55,6 +55,7 @@ def get_matches(student: StudentProfile) -> List[MatchResult]:
             total_score=breakdown["total_score"],
         ))
 
-    # Rank: Eligible/Partial by score descending, Not Eligible pushed to the bottom
-    results.sort(key=lambda r: (r.eligibility_status == "Not Eligible", -r.total_score))
+    # Rank: Eligible first, then Partial Match, then Not Eligible (each tier sorted by total_score descending)
+    tier_order = {"Eligible": 0, "Partial Match": 1, "Not Eligible": 2}
+    results.sort(key=lambda r: (tier_order.get(r.eligibility_status, 3), -r.total_score))
     return results

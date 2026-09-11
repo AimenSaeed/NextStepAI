@@ -13,18 +13,24 @@
 
 export function explainMatch(matchResult) {
   const failed = matchResult.reasons_failed || [];
+  const name = matchResult.name || "this opportunity";
+  const country = matchResult.country || "your destination";
 
   if (matchResult.eligibility_status === "Eligible") {
     return {
-      reason: "Based on your profile, you meet every eligibility rule checked for this opportunity.",
+      reason: `Strong match for ${name}. Your academic standing, residency status, and degree discipline satisfy all eligibility thresholds.`,
       gap: null,
     };
   }
 
-  const sentence = failed.length ? failed.join(". ") + "." : "This opportunity is a partial or uncertain fit based on your profile.";
+  const sentence = failed.length
+    ? `Requires attention: ${failed.join("; ")}.`
+    : "This opportunity is a partial match based on current profile parameters.";
 
   return {
     reason: sentence,
-    gap: sentence,
+    gap: failed.length
+      ? `Action required: Resolve ${failed.join(", ")} to qualify for this intake.`
+      : "Review official guidelines to verify departmental criteria.",
   };
 }

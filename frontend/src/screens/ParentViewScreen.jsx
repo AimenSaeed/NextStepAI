@@ -198,48 +198,21 @@ export default function ParentViewScreen({ screen, setScreen, matches, onBack })
                 )}
               </tbody>
 
-              {/* Aggregate totals footer row */}
-              {displayMatches.length > 1 && (
-                <tfoot className="bg-slate-50 border-t-2 border-slate-200 text-[11px] font-bold text-slate-700">
-                  <tr>
-                    <td className="p-3" colSpan={2}>
-                      TOTAL ACROSS {displayMatches.length} SCHOLARSHIPS
-                    </td>
-                    <td className="p-3">
-                      {pkr(
-                        displayMatches.reduce(
-                          (acc, m) =>
-                            acc +
-                            (m.financials?.tuitionPkr || 450_000) +
-                            (m.financials?.livingPkr || 250_000),
-                          0
-                        )
-                      )}
-                    </td>
-                    <td className="p-3 text-emerald-800">
-                      {pkr(
-                        displayMatches.reduce(
-                          (acc, m) => acc + (m.financials?.coveredAmountPkr || 0),
-                          0
-                        )
-                      )}
-                    </td>
-                    <td className="p-3 text-right text-rose-700">
-                      {pkr(
-                        displayMatches.reduce((acc, m) => {
-                          const total =
-                            (m.financials?.tuitionPkr || 450_000) +
-                            (m.financials?.livingPkr || 250_000);
-                          return acc + Math.max(0, total - (m.financials?.coveredAmountPkr || 0));
-                        }, 0)
-                      )}
-                    </td>
-                    <td className="p-3" />
-                  </tr>
-                </tfoot>
-              )}
             </table>
           </div>
+
+          {/* Genuine Parent Takeaway (No Fake Cumulatives) */}
+          {topMatch && (
+            <div className="mt-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-4 text-xs space-y-1.5">
+              <div className="flex items-center gap-2 font-bold text-emerald-950">
+                <ShieldCheck size={16} className="text-emerald-700" />
+                <span>Parent Budget Guidance &amp; Reality Check</span>
+              </div>
+              <p className="text-emerald-900 leading-relaxed">
+                A student enrolls in <strong>one</strong> degree program at a time. For your primary eligible match (<strong>{topMatch.name}</strong>), the projected family out-of-pocket commitment is <strong>{pkr(bestGapPkr)}/year</strong>, with <strong>{pkr(bestCoveredPkr)}/year</strong> subsidized by the scholarship. The other programs in this table represent alternative backups for side-by-side evaluation.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ── Footer ── */}

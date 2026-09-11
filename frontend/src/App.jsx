@@ -13,19 +13,54 @@ import ParentViewScreen from "./screens/ParentViewScreen";
 import { fetchMatches, fetchAnalysis } from "./api";
 
 function enrichMatchesWithAnalysis(matches, analysis) {
-  const byName = new Map(
-    (analysis.top_scholarships || []).map((s) => [s.name, s])
+  if (!analysis) return matches;
+
+  const topByName = new Map(
+    (analysis.top_scholarships || []).map((s) => [s.name.toLowerCase().trim(), s])
+  );
+  const partialByName = new Map(
+    (analysis.partial_matches || []).map((s) => [s.name.toLowerCase().trim(), s])
+  );
+  const roadmapByScholarship = new Map(
+    (analysis.application_roadmap || []).map((r) => [r.scholarship.toLowerCase().trim(), r.action])
   );
 
   return matches.map((m) => {
-    const ai = byName.get(m.name);
-    if (!ai) return m;
+    const key = (m.name || "").toLowerCase().trim();
+    const topAi = topByName.get(key);
+    const partialAi = partialByName.get(key);
+    const roadmapAction = roadmapByScholarship.get(key) || null;
+
+    if (topAi) {
+      return {
+        ...m,
+        reason: topAi.why_suitable || m.reason,
+        aiWhySuitable: topAi.why_suitable,
+        aiHowToApply: topAi.how_to_apply,
+        roadmapAction,
+        sourceUrl: topAi.official_link || m.sourceUrl,
+        deadlineRaw: topAi.deadline || m.deadlineRaw,
+      };
+    }
+
+    if (partialAi) {
+      const whyNot = partialAi.why_not_fully_eligible?.join("; ");
+      const howTo = partialAi.how_to_become_eligible?.join(". ");
+      return {
+        ...m,
+        reason: whyNot ? `Criteria pending: ${whyNot}` : m.reason,
+        gap: howTo ? `Action required: ${howTo}` : m.gap,
+        whyNotFullyEligible: partialAi.why_not_fully_eligible,
+        howToBecomeEligible: partialAi.how_to_become_eligible,
+        roadmapAction,
+        sourceUrl: partialAi.official_link || m.sourceUrl,
+        deadlineRaw: partialAi.deadline || m.deadlineRaw,
+      };
+    }
+
     return {
       ...m,
-      reason: ai.why_suitable || m.reason,
-      gap: null,
-      sourceUrl: ai.official_link || m.sourceUrl,
-      deadlineRaw: ai.deadline || m.deadlineRaw,
+      roadmapAction,
     };
   });
 }
@@ -90,7 +125,7 @@ export default function App() {
 
       <main className="flex-grow">
         {screen === "landing" && (
-          <LandingScreen onGetStarted={() => setScreen(user ? "intake" : "login")} />
+          <LandingScreen onGetStarted={() => setScreen("intake")} />
         )}
 
         {screen === "login" && (
@@ -98,11 +133,11 @@ export default function App() {
         )}
 
         {screen === "account" && (
-          <AccountScreen user={user} />
+          <AccountScreen user={user} onNavigate={setScreen} />
         )}
 
         {screen === "intake" && (
-          <IntakeScreen onSubmit={handleSubmit} submitting={loading} error={error} />
+          <IntakeScreen onSubmit={handleSubmit} submitting={loading} error={error} onCancel={() => setScreen(matches.length ? "dashboard" : "landing")} />
         )}
 
         {screen === "dashboard" && (
@@ -110,20 +145,20 @@ export default function App() {
             screen={screen}
             setScreen={setScreen}
             matches={matches}
+            analysis={analysis}
             loading={loading}
             onSelect={(m) => {
               setSelected(m);
               setScreen("detail");
             }}
             onRestart={() => {
-              setMatches([]);
               setScreen("intake");
             }}
           />
         )}
 
         {screen === "detail" && (
-          <DetailScreen match={selected} onBack={() => setScreen("dashboard")} />
+          <DetailScreen match={selected} analysis={analysis} onBack={() => setScreen("dashboard")} />
         )}
 
         {screen === "roadmap" && (

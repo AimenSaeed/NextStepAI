@@ -10,21 +10,55 @@ export default function Navbar({ user, onLogout, onNavigate, currentScreen }) {
         <span className="tracking-tight">NextStep <span className="text-emerald-800">AI</span></span>
       </button>
 
-      {user && (
-        <div className="flex items-center gap-6">
-          <button onClick={() => onNavigate("dashboard")} className={`text-xs font-bold ${currentScreen === "dashboard" || currentScreen === "intake" ? "text-emerald-800 underline" : "text-slate-600 hover:text-slate-900"}`}>Dashboard</button>
-          <button onClick={() => onNavigate("account")} className={`text-xs font-bold flex items-center gap-1 ${currentScreen === "account" ? "text-emerald-800 underline" : "text-slate-600 hover:text-slate-900"}`}>
-            <UserCircle size={16} />
-            {user.name.split(' ')[0]}
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => onNavigate("intake")}
+          className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+            currentScreen === "intake"
+              ? "bg-emerald-800 text-white"
+              : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+          }`}
+        >
+          Find Matches
+        </button>
+
+        {currentScreen !== "landing" && currentScreen !== "intake" && (
+          <button
+            onClick={() => onNavigate("dashboard")}
+            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+              currentScreen === "dashboard" || currentScreen === "detail" || currentScreen === "roadmap" || currentScreen === "parent"
+                ? "text-emerald-800 underline"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Dashboard
           </button>
-          <button onClick={onLogout} className="text-slate-400 hover:text-rose-600 transition-colors">
-            <LogOut size={16} />
+        )}
+
+        {user ? (
+          <div className="flex items-center gap-3 pl-2 border-l border-slate-200">
+            <button
+              onClick={() => onNavigate("account")}
+              className={`text-xs font-bold flex items-center gap-1 ${
+                currentScreen === "account" ? "text-emerald-800 underline" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              <UserCircle size={16} />
+              <span>{user.name.split(" ")[0]}</span>
+            </button>
+            <button onClick={onLogout} title="Log out" className="text-slate-400 hover:text-rose-600 transition-colors">
+              <LogOut size={15} />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => onNavigate("login")}
+            className="text-xs font-bold text-emerald-800 hover:text-emerald-900 border border-emerald-800/30 px-3 py-1.5 rounded-lg bg-emerald-50/50 hover:bg-emerald-50 transition-colors"
+          >
+            Log in
           </button>
-        </div>
-      )}
-      {!user && currentScreen !== "login" && currentScreen !== "landing" && (
-        <button onClick={() => onNavigate("login")} className="text-xs font-bold text-emerald-800 hover:text-emerald-900 border border-emerald-800/30 px-3.5 py-1.5 rounded-lg bg-emerald-50/50">Log in</button>
-      )}
+        )}
+      </div>
     </nav>
   );
 }

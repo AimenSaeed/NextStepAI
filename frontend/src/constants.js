@@ -26,7 +26,7 @@ export const PROVINCES = [
 
 // Canonical country names from her COUNTRY_KEYWORDS values.
 // Multi-select — student can pick none (any country) or several.
-export const COUNTRIES = ["USA", "UK", "Germany", "China", "Turkey", "Australia", "Japan", "South Korea", "EU"];
+export const COUNTRIES = ["Pakistan", "USA", "UK", "Germany", "China", "Turkey", "Australia", "Japan", "South Korea", "EU"];
 
 // Maps her eligibility_status strings to the UI's internal status key
 export const STATUS_MAP = {

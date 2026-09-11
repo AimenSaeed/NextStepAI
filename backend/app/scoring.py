@@ -50,7 +50,11 @@ def _score_funding_fit(student: StudentProfile, opp: Opportunity) -> float:
 def _score_country_fit(student: StudentProfile, opp: Opportunity) -> float:
     if not student.target_countries:
         return 70.0  # no preference stated
-    return 100.0 if opp.country in student.target_countries or opp.country == "Pakistan" else 30.0
+    if opp.country in student.target_countries:
+        return 100.0
+    if opp.country == "Pakistan":
+        return 40.0  # domestic program, but student explicitly requested overseas destinations
+    return 20.0
 
 
 def _score_domicile_fit(student: StudentProfile, opp: Opportunity) -> float:

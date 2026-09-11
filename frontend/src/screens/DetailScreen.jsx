@@ -96,11 +96,22 @@ export default function DetailScreen({ match, onBack }) {
         <div className="flex items-center justify-between border-b border-slate-700 pb-2">
           <div className="flex items-center gap-2">
             <Sparkles size={16} className="text-emerald-400" />
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Rule-Based AI Explanation</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">AI Match Evaluation &amp; Insights</span>
           </div>
-          <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">AI Synthesized</span>
+          <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">RAG &amp; Rules Powered</span>
         </div>
-        <p className="text-sm text-slate-200 leading-relaxed">{match.reason}</p>
+        <div className="space-y-3">
+          <div>
+            <p className="text-[11px] font-bold text-emerald-400 uppercase tracking-wide mb-1">Why this scholarship fits your profile:</p>
+            <p className="text-sm text-slate-200 leading-relaxed">{match.aiWhySuitable || match.reason}</p>
+          </div>
+          {match.aiHowToApply && (
+            <div className="pt-2 border-t border-slate-700/60">
+              <p className="text-[11px] font-bold text-teal-300 uppercase tracking-wide mb-1">Application Steps &amp; Requirements:</p>
+              <p className="text-sm text-slate-300 leading-relaxed">{match.aiHowToApply}</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Gap-to-Action Box (If Partial or Ineligible) */}
@@ -118,64 +129,74 @@ export default function DetailScreen({ match, onBack }) {
         </div>
       )}
 
-      {/* Currency Stress-Test Toggle */}
-      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
-        <div className="flex items-center justify-between">
+      {/* Currency Stress-Test Toggle (Only for Foreign Opportunities) */}
+      {match.country !== "Pakistan" ? (
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={18} className="text-emerald-800" />
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Currency Stress-Test Toggle</h3>
+            </div>
+            <span className="text-xs text-slate-400 font-medium">Foreign Exchange Analysis</span>
+          </div>
+
+          <p className="text-xs text-slate-500">
+            Simulate how foreign currency inflation or PKR devaluation impacts your net out-of-pocket education costs in {match.country}.
+          </p>
+
+          {/* Toggle Scenario Buttons */}
+          <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
+            <button
+              onClick={() => setStressScenario("base")}
+              className={`py-2 text-xs font-bold rounded-md transition-all ${
+                stressScenario === "base" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Base Exchange Rate
+            </button>
+            <button
+              onClick={() => setStressScenario("deval15")}
+              className={`py-2 text-xs font-bold rounded-md transition-all ${
+                stressScenario === "deval15" ? "bg-emerald-800 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              +15% Devaluation
+            </button>
+            <button
+              onClick={() => setStressScenario("deval30")}
+              className={`py-2 text-xs font-bold rounded-md transition-all ${
+                stressScenario === "deval30" ? "bg-emerald-800 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              +30% Devaluation
+            </button>
+          </div>
+
+          {/* Scenario Calculation Breakdown */}
+          <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-[11px] text-slate-500 font-medium">Total Cost ({scenarioLabel})</p>
+              <p className="text-sm font-bold text-slate-900 mt-1">PKR {stressedTotalPkr.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-[11px] text-slate-500 font-medium">Scholarship Coverage ({coveragePercent}%)</p>
+              <p className="text-sm font-bold text-emerald-800 mt-1">PKR {coveredPkr.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-[11px] text-slate-500 font-medium">Net Out-of-Pocket Gap</p>
+              <p className="text-sm font-bold text-rose-800 mt-1">PKR {outOfPocketPkr.toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between text-xs text-slate-600">
           <div className="flex items-center gap-2">
-            <TrendingUp size={18} className="text-emerald-800" />
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Currency Stress-Test Toggle</h3>
+            <TrendingUp size={16} className="text-emerald-700" />
+            <span><strong>Domestic Program:</strong> Fee structure is directly PKR-denominated with zero foreign exchange risk.</span>
           </div>
-          <span className="text-xs text-slate-400 font-medium">PKR Currency First</span>
+          <span className="text-[11px] text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded">PKR Native</span>
         </div>
-
-        <p className="text-xs text-slate-500">
-          Simulate how foreign currency inflation or PKR devaluation impacts your net out-of-pocket education costs.
-        </p>
-
-        {/* Toggle Scenario Buttons */}
-        <div className="grid grid-cols-3 gap-2 bg-slate-100 p-1.5 rounded-lg border border-slate-200">
-          <button
-            onClick={() => setStressScenario("base")}
-            className={`py-2 text-xs font-bold rounded-md transition-all ${
-              stressScenario === "base" ? "bg-white text-slate-900 shadow-sm" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Base Exchange Rate
-          </button>
-          <button
-            onClick={() => setStressScenario("deval15")}
-            className={`py-2 text-xs font-bold rounded-md transition-all ${
-              stressScenario === "deval15" ? "bg-emerald-800 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            +15% Devaluation
-          </button>
-          <button
-            onClick={() => setStressScenario("deval30")}
-            className={`py-2 text-xs font-bold rounded-md transition-all ${
-              stressScenario === "deval30" ? "bg-emerald-800 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            +30% Devaluation
-          </button>
-        </div>
-
-        {/* Scenario Calculation Breakdown */}
-        <div className="bg-slate-50 rounded-lg p-4 border border-slate-200 grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-[11px] text-slate-500 font-medium">Total Cost ({scenarioLabel})</p>
-            <p className="text-sm font-bold text-slate-900 mt-1">PKR {stressedTotalPkr.toLocaleString()}</p>
-          </div>
-          <div>
-            <p className="text-[11px] text-slate-500 font-medium">Scholarship Coverage ({coveragePercent}%)</p>
-            <p className="text-sm font-bold text-emerald-800 mt-1">PKR {coveredPkr.toLocaleString()}</p>
-          </div>
-          <div>
-            <p className="text-[11px] text-slate-500 font-medium">Net Out-of-Pocket Gap</p>
-            <p className="text-sm font-bold text-rose-800 mt-1">PKR {outOfPocketPkr.toLocaleString()}</p>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Official Link Action */}
       {match.sourceUrl && (

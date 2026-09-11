@@ -181,11 +181,39 @@ function adaptMatch(m) {
         ]),
   ];
 
-  const estimatedTuitionPkr = isOverseas ? 3500000 : 450000;
-  const estimatedLivingPkr = isOverseas ? 1800000 : 250000;
-  const coveragePercent = m.eligibility_status === "Eligible" ? 100 : m.eligibility_status === "Partial Match" ? 50 : 0;
-  const coveredAmountPkr = Math.round((estimatedTuitionPkr + estimatedLivingPkr) * (coveragePercent / 100));
-  const netOutofPocketPkr = Math.max(0, (estimatedTuitionPkr + estimatedLivingPkr) - coveredAmountPkr);
+  const countryLower = (m.country || "").toLowerCase();
+  let estimatedTuitionPkr = 350000;
+  let estimatedLivingPkr = 200000;
+
+  if (isOverseas) {
+    if (countryLower.includes("germany")) {
+      estimatedTuitionPkr = 0; // Public universities in Germany have €0 tuition
+      estimatedLivingPkr = 2400000;
+    } else if (countryLower.includes("usa") || countryLower.includes("uk") || countryLower.includes("australia")) {
+      estimatedTuitionPkr = 3800000;
+      estimatedLivingPkr = 2200000;
+    } else if (countryLower.includes("china") || countryLower.includes("turkey")) {
+      estimatedTuitionPkr = 1200000;
+      estimatedLivingPkr = 1000000;
+    } else {
+      estimatedTuitionPkr = 2800000;
+      estimatedLivingPkr = 1800000;
+    }
+  }
+
+  const nameLower = (m.name || "").toLowerCase();
+  const fundingText = (m.funding_type || "").toLowerCase();
+  const isFullFunding = fundingText.includes("full") || fundingText.includes("100%") || nameLower.includes("ehsaas") || nameLower.includes("fulbright") || nameLower.includes("daad") || nameLower.includes("mext");
+
+  const coveragePercent = m.eligibility_status === "Eligible"
+    ? (isFullFunding ? 100 : 70)
+    : m.eligibility_status === "Partial Match"
+    ? (isFullFunding ? 60 : 40)
+    : 0;
+
+  const totalCostPkr = estimatedTuitionPkr + estimatedLivingPkr;
+  const coveredAmountPkr = Math.round(totalCostPkr * (coveragePercent / 100));
+  const netOutofPocketPkr = Math.max(0, totalCostPkr - coveredAmountPkr);
 
   return {
     id: m.opportunity_id,
@@ -201,8 +229,13 @@ function adaptMatch(m) {
       country_fit: m.total_score ? Math.round(m.total_score * 0.15) : 8,
       domicile_fit: m.total_score ? Math.round(m.total_score * 0.1) : 5,
     },
-    reason,
-    gap,
+    reason: m.reason || reason,
+    gap: m.gap || gap,
+    aiWhySuitable: m.aiWhySuitable || null,
+    aiHowToApply: m.aiHowToApply || null,
+    whyNotFullyEligible: m.whyNotFullyEligible || null,
+    howToBecomeEligible: m.howToBecomeEligible || null,
+    roadmapAction: m.roadmapAction || null,
     deadlineRaw: m.deadline_raw || "Typical Window: Oct – Dec 2026",
     deadlineUrgent: m.eligibility_status === "Eligible",
     checklist: m.checklist || defaultChecklist,
@@ -210,7 +243,7 @@ function adaptMatch(m) {
     financials: {
       tuitionPkr: estimatedTuitionPkr,
       livingPkr: estimatedLivingPkr,
-      totalCostPkr: estimatedTuitionPkr + estimatedLivingPkr,
+      totalCostPkr,
       coveredAmountPkr,
       netOutofPocketPkr,
       coveragePercent,
