@@ -238,3 +238,12 @@ node_modules/
 .DS_Store
 
 .ipynb_checkpoints/
+
+# Build artifacts (generated - do not commit)
+frontend/dist/
+
+# Runtime data (ChromaDB, source registry - generated at runtime)
+data/
+
+# Keep the seeded SQLite database (used for non-Docker deploys)
+!database/nextstepai.db

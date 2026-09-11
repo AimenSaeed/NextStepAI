@@ -9,8 +9,11 @@ import { STATUS_MAP } from "./constants";
 import { explainMatch } from "./explain";
 import fallbackOpportunities from "./data/scholarships.json";
 
-export const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
-export const AI_RAG_BASE = import.meta.env.VITE_AI_RAG_BASE || "http://127.0.0.1:8001";
+// In production (unified deployment) these resolve to the same origin — no env vars needed.
+// For local dev with separate servers, set VITE_API_BASE=http://127.0.0.1:8000 and
+// VITE_AI_RAG_BASE=http://127.0.0.1:8001 in frontend/.env.local
+export const API_BASE = import.meta.env.VITE_API_BASE ?? "";
+export const AI_RAG_BASE = import.meta.env.VITE_AI_RAG_BASE ?? "";
 
 /**
  * Calls AI RAG evidence layer (:8001/analyze)

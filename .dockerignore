@@ -1,0 +1,42 @@
+﻿# Python virtual environments
+backend/.venv/
+backend/venv/
+ai-rag/.venv/
+ai-rag/venv/
+
+# Node modules (frontend gets fresh npm ci in Docker)
+frontend/node_modules/
+
+# Vite build output (rebuilt inside Docker)
+frontend/dist/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Git
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+
+# Runtime data (generated at runtime)
+data/
+*.chroma/
+
+# Env files (pass via docker -e or platform env vars)
+.env
+.env.*
+!.env.example
+
+# Test files
+pytest_cache/
+.pytest_cache/
+htmlcov/
