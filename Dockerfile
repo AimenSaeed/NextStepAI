@@ -3,9 +3,11 @@ FROM node:20-alpine AS frontend-builder
 WORKDIR /app/frontend
 
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY frontend/ ./
+ENV VITE_API_BASE=/api/backend
+ENV VITE_AI_RAG_BASE=/api/rag
 RUN npm run build
 
 # Stage 2: Combined Python + Nginx Container
