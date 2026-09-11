@@ -1,1 +1,77 @@
 @import "tailwindcss";
+
+/* Design Tokens */
+:root {
+  --navy: #071A3D;
+  --dark-teal: #063B46;
+  --emerald: #00A878;
+  --bright-teal: #00D4B0;
+  --electric-blue: #4F7CFF;
+  --gold: #F5B942;
+  --cream: #FFF8E8;
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f8faf9;
+  color: #1a2035;
+}
+.font-display {
+  font-family: 'DM Serif Display', Georgia, serif;
+}
+
+/* Keyframes */
+@keyframes ring-cw  { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
+@keyframes ring-ccw { from { transform: rotate(0deg); }   to { transform: rotate(-360deg); } }
+@keyframes needle-search {
+  0%   { transform: rotate(-20deg); }
+  15%  { transform: rotate(5deg);   }
+  30%  { transform: rotate(5deg);   }
+  50%  { transform: rotate(38deg);  }
+  65%  { transform: rotate(38deg);  }
+  80%  { transform: rotate(-5deg);  }
+  100% { transform: rotate(-20deg); }
+}
+@keyframes ai-pulse {
+  0%   { transform: scale(0.8); opacity: 0.9; }
+  60%  { transform: scale(2.4); opacity: 0;   }
+  100% { transform: scale(2.4); opacity: 0;   }
+}
+@keyframes globe-shimmer {
+  0%   { opacity: 0.5; transform: translateX(-4px); }
+  50%  { opacity: 0.9; transform: translateX(4px);  }
+  100% { opacity: 0.5; transform: translateX(-4px); }
+}
+@keyframes glow-pulse   { 0%,100% { opacity:0.5; } 50% { opacity:1; } }
+@keyframes travel-light { 0%{stroke-dashoffset:200;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{stroke-dashoffset:0;opacity:0} }
+@keyframes slide-down   { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes card-rise    { from{opacity:0;transform:translateY(24px)}  to{opacity:1;transform:translateY(0)} }
+@keyframes fade-in      { from{opacity:0} to{opacity:1} }
+@keyframes scale-in     { from{opacity:0;transform:scale(0.92)} to{opacity:1;transform:scale(1)} }
+@keyframes progress-fill{ from{width:0%} to{width:var(--target-w,0%)} }
+
+/* Animation helpers */
+.animate-ring-cw    { animation: ring-cw    40s linear infinite; }
+.animate-ring-ccw   { animation: ring-ccw   55s linear infinite; }
+.animate-needle     { animation: needle-search 9s ease-in-out infinite; }
+.animate-pulse-ai   { animation: ai-pulse   3.5s ease-out infinite; }
+.animate-globe      { animation: globe-shimmer 8s ease-in-out infinite; }
+.animate-glow       { animation: glow-pulse 2.5s ease-in-out infinite; }
+.animate-fade-in    { animation: fade-in    0.5s ease both; }
+.animate-scale-in   { animation: scale-in   0.4s ease both; }
+.animate-slide-down { animation: slide-down 0.3s ease both; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 3px; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

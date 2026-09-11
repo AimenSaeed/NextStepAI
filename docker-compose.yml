@@ -1,0 +1,21 @@
+services:
+  nextstep-ai:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextstep-ai-app
+    ports:
+      - "80:80"
+    environment:
+      - ENVIRONMENT=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-gemini-2.0-flash}
+      - CHROMA_PATH=/app/data/chroma
+      - SOURCE_REGISTRY_PATH=/app/data/source_registry.sqlite3
+      - MEMBER_A_BASE_URL=http://127.0.0.1:8000
+    volumes:
+      - nextstep_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  nextstep_data:
