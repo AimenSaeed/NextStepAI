@@ -1,27 +1,15 @@
 import React from "react";
-import { Compass, ShieldCheck, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="print:hidden border-t border-slate-200/80 py-10 mt-auto" style={{ background: "#071A3D" }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="NextStep AI" className="h-7 w-auto object-contain opacity-90" />
-          <span className="font-display text-base font-bold text-white tracking-tight">
-            NextStep <span style={{ color: "#00D4B0" }}>AI</span>
-          </span>
-          <span className="text-xs text-slate-400 ml-2 hidden sm:inline">
-            • AI Scholarship Navigator for Pakistani Students
-          </span>
-        </div>
+    <footer className="print:hidden bg-slate-50 border-t border-slate-200 py-8 text-center mt-auto">
+      <p className="font-serif text-slate-800 font-medium mb-2">NextStep AI</p>
 
-        <div className="flex items-center gap-6 text-xs text-slate-400 font-medium">
-          <span className="flex items-center gap-1 text-slate-300">
-            <ShieldCheck size={14} className="text-[#00A878]" /> 100% Free & Independent
-          </span>
-          <span>•</span>
-          <span>Verified 2026</span>
-        </div>
+      <p className="text-xs text-slate-500 mb-4">Helping Pakistani students find their path.</p>
+      <div className="flex justify-center gap-4 text-xs text-slate-400">
+        <button className="hover:text-slate-600">About</button>
+        <button className="hover:text-slate-600">Contact</button>
+        <button className="hover:text-slate-600">Terms</button>
       </div>
     </footer>
   );
